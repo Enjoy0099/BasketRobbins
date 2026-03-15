@@ -31,8 +31,11 @@ public class Turret : MonoBehaviour
 
     public Vector2 ballUpDownRange;
 
+    public Vector3 ballInitialPosition;
 
     #endregion
+
+
 
     #region Private Variables
 
@@ -45,22 +48,26 @@ public class Turret : MonoBehaviour
     void Start()
     {
         currentBallAngle = 0.0f;
+        ballInitialPosition = ballTransform.position;
+
+        Debug.Log("Intitial Position of ball: " + ballInitialPosition);
     }
 
     private IEnumerator Shoot()
     {
         isShooting = true;
+        Vector3 shootDirection = transform.forward; // turret's forward
 
         /*var cannonball = GameObject.Instantiate(this.cannonBallPrefab);
         cannonball.transform.position = this.ballTransform.position;*/
-        var rb = ballTransform.GetComponentInChildren<Rigidbody>();
+        var rb = ballTransform.GetComponent<Rigidbody>();
 
         rb.isKinematic = false;
 
 
         //No negative drag ^^
         rb.drag = Mathf.Clamp(ballDrag, 0.0f, float.PositiveInfinity);
-        rb.AddForce(shootVelocity * ballTransform.forward, ForceMode.VelocityChange);
+        rb.AddForce(shootVelocity * shootDirection, ForceMode.VelocityChange);
 
         yield return new WaitForSeconds(shootingCooldown);
 
@@ -111,21 +118,19 @@ public class Turret : MonoBehaviour
         ListPool<Vector3>.Release(lrPositions);
     }
 
-    private void PlaceCrosshair()
-    {
+    //private void PlaceCrosshair()
+    //{
+    //    Vector3 shootDirection = transform.forward;
 
-        float timeToHitGround = Trajectory.GetTimeForReachingYOnTheWayDown(this.ballTransform.position,
-            this.shootVelocity * this.ballTransform.forward,
-            this.ballDrag,
-            this.targetHeight);
+    //    float timeToHitGround = Trajectory.GetTimeForReachingYOnTheWayDown(ballTransform.position,
+    //        shootVelocity * shootDirection,
+    //        ballDrag,
+    //        targetHeight);
 
-        this.crosshair.transform.position = Trajectory.GetPosition(this.ballTransform.position,
-            this.shootVelocity * this.ballTransform.forward,
-            this.ballDrag,
-            timeToHitGround);
+    //    crosshair.transform.position = Trajectory.GetPosition(ballTransform.position, shootVelocity * shootDirection, ballDrag, timeToHitGround);
 
-        this.crosshair.transform.position += Vector3.up * this.crosshairOffset;
-    }
+    //    crosshair.transform.position += Vector3.up * crosshairOffset;
+    //}
 
     void Update()
     {
@@ -138,4 +143,18 @@ public class Turret : MonoBehaviour
 
         //PlaceCrosshair();
     }
+
+    #region UI Functions
+
+    public void ballResetPosition()
+    {
+        Debug.Log("Intitial Position of ball: " +  ballInitialPosition);
+        var rb = ballTransform.GetComponent<Rigidbody>();
+
+        rb.isKinematic = true;
+        ballTransform.position = ballInitialPosition;
+        ballTransform.localRotation = Quaternion.identity;
+    }
+
+    #endregion
 }
