@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.hiddenmonk.u3drtg": "file:D:/New game - BasketRobbins data/Unity3DRuntimeTransformGizmo-feature-upm-package",
+    "com.hiddenmonk.u3drtg": "file:../Assets/Packages/Unity3DRuntimeTransformGizmo-feature-upm-package",
     "com.unity.collab-proxy": "2.5.1",
     "com.unity.ide.rider": "3.0.31",
     "com.unity.ide.visualstudio": "2.0.22",

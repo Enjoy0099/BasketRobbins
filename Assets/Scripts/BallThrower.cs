@@ -7,7 +7,6 @@ public class BallThrower : MonoBehaviour
 {
     // Start is called before the first frame update
     [SerializeField] private Rigidbody ballBody;
-    [SerializeField] private float currentForce = 0;
     [SerializeField] private float minForce = 5f;
     [SerializeField] private float maxForce = 10f;
 

@@ -43,6 +43,8 @@ public class Turret : MonoBehaviour
 
     private float currentBallAngle = 0.0f;
 
+    private float ballRadius;
+
     #endregion
 
     void Start()
@@ -50,7 +52,7 @@ public class Turret : MonoBehaviour
         currentBallAngle = 0.0f;
         ballInitialPosition = ballTransform.position;
 
-        Debug.Log("Intitial Position of ball: " + ballInitialPosition);
+        ballRadius = ballTransform.GetComponent<SphereCollider>().radius;
     }
 
     private IEnumerator Shoot()
@@ -70,8 +72,6 @@ public class Turret : MonoBehaviour
         rb.AddForce(shootVelocity * shootDirection, ForceMode.VelocityChange);
 
         yield return new WaitForSeconds(shootingCooldown);
-
-        isShooting = false;
     }
 
     private void HandleInput()
@@ -101,14 +101,36 @@ public class Turret : MonoBehaviour
     {
         List<Vector3> lrPositions = ListPool<Vector3>.Get();
 
-        Vector3 currentPosition = transform.position;
+        Vector3 previousPosition = transform.position;
+        Vector3 currentPosition = previousPosition;
         float currentTime = 0.0f;
 
-        while (currentPosition.y > targetHeight)
+        lrPositions.Add(currentPosition);
+
+        while (true)
         {
-            currentPosition = Trajectory.GetPosition(transform.position, shootVelocity * transform.forward, ballDrag, currentTime);
             currentTime += samplingRate;
+            currentPosition = Trajectory.GetPosition(transform.position, shootVelocity * transform.forward, ballDrag, currentTime);
+
+            //hit any collider.
+            if (Physics.Linecast(previousPosition, currentPosition, out RaycastHit hit))
+            {
+                lrPositions.Add(hit.point);
+                break;
+            }
+
+            //if the line has reached target height
+            if (currentPosition.y <= targetHeight)
+            {
+                lrPositions.Add(currentPosition);
+                break;
+            }
+
             lrPositions.Add(currentPosition);
+            previousPosition = currentPosition;
+
+            if (lrPositions.Count > 100) break;
+
         }
 
         lineRenderer.positionCount = lrPositions.Count;
@@ -118,22 +140,61 @@ public class Turret : MonoBehaviour
         ListPool<Vector3>.Release(lrPositions);
     }
 
-    //private void PlaceCrosshair()
-    //{
-    //    Vector3 shootDirection = transform.forward;
+    private void PlaceCrosshair()
+    {
+        Vector3 shootDirection = transform.forward;
 
-    //    float timeToHitGround = Trajectory.GetTimeForReachingYOnTheWayDown(ballTransform.position,
-    //        shootVelocity * shootDirection,
-    //        ballDrag,
-    //        targetHeight);
+        Vector3 previousPosition = ballTransform.position;
+        Vector3 currentPosition = previousPosition;
+        float currentTime = 0f;
 
-    //    crosshair.transform.position = Trajectory.GetPosition(ballTransform.position, shootVelocity * shootDirection, ballDrag, timeToHitGround);
+        Vector3 hitPoint = Vector3.zero;
+        Vector3 hitNormal = Vector3.up; // default for flat ground
 
-    //    crosshair.transform.position += Vector3.up * crosshairOffset;
-    //}
+        while (true)
+        {
+            currentTime += samplingRate;
+            currentPosition = Trajectory.GetPosition(ballTransform.position, shootVelocity * shootDirection, ballDrag, currentTime);
+
+            Vector3 segmentDir = currentPosition - previousPosition;
+            float segmentLength = segmentDir.magnitude;
+
+            if (segmentLength > 0f)
+            {
+                // SphereCast for collision considering ball radius
+                if (Physics.SphereCast(previousPosition, ballRadius, segmentDir.normalized, out RaycastHit hit, segmentLength))
+                {
+                    hitPoint = hit.point;
+                    hitNormal = hit.normal;
+                    break;
+                }
+            }
+
+            // Stop if reaching target height
+            if (currentPosition.y <= targetHeight)
+            {
+                hitPoint = currentPosition;
+                hitNormal = Vector3.up; // flat ground
+                break;
+            }
+
+            previousPosition = currentPosition;
+
+            if (currentTime > 5f) break; // safety
+        }
+
+        // Place crosshair slightly above the surface
+        crosshair.transform.position = hitPoint + Vector3.up * crosshairOffset;
+
+        // Rotate crosshair to align with surface normal
+        crosshair.transform.rotation = Quaternion.FromToRotation(Vector3.up, hitNormal) * Quaternion.Euler(90f, 0f, 0f);
+    }
 
     void Update()
     {
+        if(isShooting)
+            return;
+
         if (samplingRate > 0.0f)
         {
             CalculateTrajectoryLine();
@@ -148,12 +209,13 @@ public class Turret : MonoBehaviour
 
     public void ballResetPosition()
     {
-        Debug.Log("Intitial Position of ball: " +  ballInitialPosition);
         var rb = ballTransform.GetComponent<Rigidbody>();
 
         rb.isKinematic = true;
         ballTransform.position = ballInitialPosition;
         ballTransform.localRotation = Quaternion.identity;
+
+        isShooting = false;
     }
 
     #endregion
