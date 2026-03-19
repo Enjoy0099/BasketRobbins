@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.hiddenmonk.u3drtg": {
-      "version": "file:D:/New game - BasketRobbins data/Unity3DRuntimeTransformGizmo-feature-upm-package",
+      "version": "file:../Assets/Packages/Unity3DRuntimeTransformGizmo-feature-upm-package",
       "depth": 0,
       "source": "local",
       "dependencies": {}
