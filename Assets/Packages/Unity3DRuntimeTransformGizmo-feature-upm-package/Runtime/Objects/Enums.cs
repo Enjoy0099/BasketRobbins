@@ -1,8 +1,8 @@
 namespace RuntimeGizmos
 {
 	public enum TransformSpace {Global, Local}
-	public enum TransformType {Move, Rotate, Scale /*, RectTool*/, All}
-	public enum TransformPivot {Pivot, Center}
+	public enum TransformType {Move, Rotate, Scale /*, RectTool*/, All, MoRo}
+    public enum TransformPivot {Pivot, Center}
 	public enum Axis {None, X, Y, Z, Any}
 
 	//CenterType.All is the center of the current object mesh or pivot if not mesh and all its childrens mesh or pivot if no mesh.

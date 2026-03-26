@@ -1,6 +1,9 @@
 {
     "name": "HiddenMonk.U3DRTG",
-    "references": [],
+    "rootNamespace": "",
+    "references": [
+        "GUID:956e424bcc98e224b94995b22766474e"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

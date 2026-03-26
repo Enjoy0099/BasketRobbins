@@ -1,9 +1,11 @@
+﻿using BasketRobbins;
 using CommandUndoRedo;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static UnityEngine.GraphicsBuffer;
 
 namespace RuntimeGizmos
 {
@@ -129,7 +131,9 @@ namespace RuntimeGizmos
 		static Material lineMaterial;
 		static Material outlineMaterial;
 
-		void Awake()
+		Transform currentTarget = null;
+
+        void Awake()
 		{
 			myCamera = GetComponent<Camera>();
 			SetMaterial();
@@ -257,7 +261,7 @@ namespace RuntimeGizmos
 
 		void HandleUndoRedo()
 		{
-			if(maxUndoStored != UndoRedoManager.maxUndoStored) { UndoRedoManager.maxUndoStored = maxUndoStored; }
+			/*if(maxUndoStored != UndoRedoManager.maxUndoStored) { UndoRedoManager.maxUndoStored = maxUndoStored; }
 
 			if(Input.GetKey(ActionKey))
 			{
@@ -269,7 +273,7 @@ namespace RuntimeGizmos
 				{
 					UndoRedoManager.Redo();
 				}
-			}
+			}*/
 		}
 
 		//We only support scaling in local space.
@@ -311,7 +315,7 @@ namespace RuntimeGizmos
 
 		void SetSpaceAndType()
 		{
-			if(Input.GetKey(ActionKey)) return;
+			/*if(Input.GetKey(ActionKey)) return;
 
 			if(Input.GetKeyDown(SetMoveType)) transformType = TransformType.Move;
 			else if(Input.GetKeyDown(SetRotateType)) transformType = TransformType.Rotate;
@@ -352,7 +356,7 @@ namespace RuntimeGizmos
 			if(transformType == TransformType.Scale)
 			{
 				if(pivot == TransformPivot.Pivot) scaleType = ScaleType.FromPoint; //FromPointOffset can be inaccurate and should only really be used in Center mode if desired.
-			}
+			}*/
 		}
 
 		void TransformSelected()
@@ -639,7 +643,7 @@ namespace RuntimeGizmos
 		{
 			if(nearAxis == Axis.None && Input.GetMouseButtonDown(0))
 			{
-				bool isAdding = Input.GetKey(AddSelection);
+                /*bool isAdding = Input.GetKey(AddSelection);
 				bool isRemoving = Input.GetKey(RemoveSelection);
 
 				RaycastHit hitInfo; 
@@ -647,7 +651,10 @@ namespace RuntimeGizmos
 				{
 					Transform target = hitInfo.transform;
 
-					if(isAdding)
+                    if (!target.CompareTag(NameTag.MoveablePlatform_Tag))
+                        return;
+
+                    if (isAdding)
 					{
 						AddTarget(target);
 					}
@@ -664,9 +671,52 @@ namespace RuntimeGizmos
 					{
 						ClearTargets();
 					}
-				}
+				}*/
+
+
+                RaycastHit hitInfo;
+
+                if (Physics.Raycast(myCamera.ScreenPointToRay(Input.mousePosition), out hitInfo, Mathf.Infinity, selectionMask))
+                {
+                    Transform target = hitInfo.transform.root;
+
+                    if (!target.CompareTag(NameTag.MoveablePlatform_Tag))
+					{
+                        ClearTargets();
+                        return;
+                    }
+                        
+
+                    if (currentTarget == target)
+                    {
+						// Already selected → deselect
+						//RemoveTarget(target);
+
+                        ClearTargets();
+                    }
+                    else
+                    {
+                        // Not selected → select it
+
+                        SetTarget(target);
+                    }
+                }
+                else
+                {
+                    // Clicked empty space → deselect
+
+                    ClearTargets();
+                }
 			}
 		}
+
+		void SetTarget(Transform target)
+		{
+			// your existing logic
+			ClearAndAddTarget(target);
+
+            currentTarget = target;
+        }
 
 		public void AddTarget(Transform target, bool addCommand = true)
 		{
@@ -701,7 +751,9 @@ namespace RuntimeGizmos
 
 		public void ClearTargets(bool addCommand = true)
 		{
-			if(addCommand) UndoRedoManager.Insert(new ClearTargetsCommand(this, targetRootsOrdered));
+			currentTarget = null;
+
+            if (addCommand) UndoRedoManager.Insert(new ClearTargetsCommand(this, targetRootsOrdered));
 
 			ClearAllHighlightedRenderers();
 			targetRoots.Clear();
@@ -1018,12 +1070,12 @@ namespace RuntimeGizmos
 			else if(xClosestDistance <= minSelectedDistanceCheck && xClosestDistance <= yClosestDistance && xClosestDistance <= zClosestDistance) SetTranslatingAxis(type, Axis.X);
 			else if(yClosestDistance <= minSelectedDistanceCheck && yClosestDistance <= xClosestDistance && yClosestDistance <= zClosestDistance) SetTranslatingAxis(type, Axis.Y);
 			else if(zClosestDistance <= minSelectedDistanceCheck && zClosestDistance <= xClosestDistance && zClosestDistance <= yClosestDistance) SetTranslatingAxis(type, Axis.Z);
-			else if(type == TransformType.Rotate && mainTargetRoot != null)
+			/*else if(type == TransformType.Rotate && mainTargetRoot != null)
 			{
 				Ray mouseRay = myCamera.ScreenPointToRay(Input.mousePosition);
 				Vector3 mousePlaneHit = Geometry.LinePlaneIntersect(mouseRay.origin, mouseRay.direction, pivotPoint, (transform.position - pivotPoint).normalized);
 				if((pivotPoint - mousePlaneHit).sqrMagnitude <= (GetHandleLength(TransformType.Rotate)).Squared()) SetTranslatingAxis(type, Axis.Any);
-			}
+			}*/
 		}
 
 		float ClosestDistanceFromMouseToLines(List<Vector3> lines)
