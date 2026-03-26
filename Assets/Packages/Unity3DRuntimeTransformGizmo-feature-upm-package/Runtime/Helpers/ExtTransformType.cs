@@ -16,7 +16,13 @@ namespace RuntimeGizmos
 				else if(type == TransformType.Scale && space == TransformSpace.Local) return true;
 			}
 
-			return false;
+            if (mainType == TransformType.MoRo)
+            {
+                if (type == TransformType.Move) return true;
+                else if (type == TransformType.Rotate) return true;
+            }
+
+            return false;
 		}
 	}
 }
