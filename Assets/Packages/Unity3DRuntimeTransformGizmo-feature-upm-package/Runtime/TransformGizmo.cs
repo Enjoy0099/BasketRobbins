@@ -131,7 +131,9 @@ namespace RuntimeGizmos
 		static Material lineMaterial;
 		static Material outlineMaterial;
 
-		Transform currentTarget = null;
+		private Transform currentTarget = null;
+
+        private bool canGizmoShow = true;
 
         void Awake()
 		{
@@ -142,22 +144,40 @@ namespace RuntimeGizmos
 		void OnEnable()
 		{
 			forceUpdatePivotCoroutine = StartCoroutine(ForceUpdatePivotPointAtEndOfFrame());
-		}
+
+			GameManager.OnSimulationStart += SimulationStart;
+            GameManager.OnSimulationStop += SimulationStop;
+        }
 
 		void OnDisable()
 		{
+			GameManager.OnSimulationStart -= SimulationStart;
+			GameManager.OnSimulationStop -= SimulationStop;
+
 			ClearTargets(); //Just so things gets cleaned up, such as removing any materials we placed on objects.
 
 			StopCoroutine(forceUpdatePivotCoroutine);
 		}
 
-		void OnDestroy()
+        void SimulationStart()
+        {
+            canGizmoShow = false;
+        }
+
+        void SimulationStop()
+        {
+            canGizmoShow = true;
+        }
+
+        void OnDestroy()
 		{
 			ClearAllHighlightedRenderers();
 		}
 
 		void Update()
 		{
+			if (!canGizmoShow) return;
+
 			HandleUndoRedo();
 
 			SetSpaceAndType();
@@ -178,7 +198,9 @@ namespace RuntimeGizmos
 
 		void LateUpdate()
 		{
-			if(mainTargetRoot == null) return;
+            if (!canGizmoShow) return;
+
+            if (mainTargetRoot == null) return;
 
 			//We run this in lateupdate since coroutines run after update and we want our gizmos to have the updated target transform position after TransformSelected()
 			SetAxisInfo();
@@ -193,7 +215,9 @@ namespace RuntimeGizmos
 
         void OnRenderObject()
 		{
-			if(mainTargetRoot == null || manuallyHandleGizmo) return;
+            if (!canGizmoShow) return;
+
+            if (mainTargetRoot == null || manuallyHandleGizmo) return;
 
 			lineMaterial.SetPass(0);
 
