@@ -23,10 +23,28 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if(instance == null)
+        if (instance == null)
+        {
             instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
-            DontDestroyOnLoad(instance);
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    /*public void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ToggleSimulation();
+        }
+    }*/
+
+    public bool IsSimulating()
+    {
+        return isSimulating;
     }
 
     public void ToggleSimulation()
@@ -38,7 +56,6 @@ public class GameManager : MonoBehaviour
         if (isSimulating)
         {
             OnSimulationStart?.Invoke();
-            Debug.Log(OnSimulationStart?.GetInvocationList().Length ?? 0);
         }
         else
         {

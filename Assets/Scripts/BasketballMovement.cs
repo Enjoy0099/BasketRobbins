@@ -91,10 +91,12 @@ public class BasketballMovement : MonoBehaviour
         var rb = ballTransform.GetComponent<Rigidbody>();
 
         rb.isKinematic = false;
+        rb.WakeUp();
 
 
         //No negative drag ^^
         rb.drag = Mathf.Clamp(ballDrag, 0.0f, float.PositiveInfinity);
+        rb.velocity = Vector3.zero;
         rb.AddForce(shootVelocity * shootDirection, ForceMode.VelocityChange);
 
         yield return new WaitForSeconds(shootingCooldown);
@@ -121,6 +123,7 @@ public class BasketballMovement : MonoBehaviour
 
         if (!isShooting && Input.GetKeyDown(KeyCode.Space))
         {
+            Debug.Log("Ball throw");
             StartCoroutine(Shoot());
         }
     }
