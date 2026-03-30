@@ -123,12 +123,8 @@ public class BasketballMovement : MonoBehaviour
 
         if (!isShooting && Input.GetKeyDown(KeyCode.Space))
         {
+            Debug.Log("Ball throw");
             StartCoroutine(Shoot());
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Debug.Log("SPACE PRESSED");
         }
     }
 
