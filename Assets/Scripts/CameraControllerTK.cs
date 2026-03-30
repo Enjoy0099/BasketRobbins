@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Cinemachine;
 
-public class CameraController : MonoBehaviour
+public class CameraControllerTK : MonoBehaviour
 {
     public CinemachineFreeLook followCam;
     public CinemachineVirtualCamera idleCam;
