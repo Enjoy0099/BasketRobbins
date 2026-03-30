@@ -251,6 +251,7 @@ GameObject:
   - component: {fileID: 118746073}
   - component: {fileID: 118746072}
   - component: {fileID: 118746074}
+  - component: {fileID: 118746075}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -436,6 +437,20 @@ MonoBehaviour:
   selectionMask:
     serializedVersion: 2
     m_Bits: 4294967291
+--- !u!114 &118746075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 118746068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf3518e85f10ccb4eb963209e67a6180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 10
+  lookSpeed: 2
 --- !u!1 &350117040
 GameObject:
   m_ObjectHideFlags: 0
@@ -3592,6 +3607,7 @@ GameObject:
   - component: {fileID: 2448410302162189382}
   - component: {fileID: 1353985112}
   - component: {fileID: 1353985113}
+  - component: {fileID: 4249845824011836820}
   m_Layer: 0
   m_Name: Orange Ball
   m_TagString: Untagged
@@ -3599,6 +3615,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &4249845824011836820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4249845824011836819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521a15a944e98ed4685c3552ff764372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  throwForce: 10
 --- !u!4 &4300983117863542289
 Transform:
   m_ObjectHideFlags: 0
