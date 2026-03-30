@@ -191,7 +191,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5109889}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0.089938626, y: -0.7013638, z: 0.08993865, w: 0.7013636}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -530,8 +530,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followCam: {fileID: 1920615775}
   idleCam: {fileID: 122016131}
-  moveSpeed: 10
-  lookSpeed: 2
 --- !u!114 &118746076
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -833,7 +831,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342416215}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0.07720006, y: -0.70288, z: 0.077200085, w: 0.70287985}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
