@@ -525,13 +525,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 118746068}
   m_Enabled: 1
   m_EditorHideFlags: 0
-<<<<<<< NM
-  m_Script: {fileID: 11500000, guid: cf3518e85f10ccb4eb963209e67a6180, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 10
-  lookSpeed: 2
-=======
   m_Script: {fileID: 11500000, guid: 64218ce185956d34cb8d4cf3be6f0675, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -847,7 +840,6 @@ Transform:
   m_Father: {fileID: 1920615776}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
->>>>>>> TK
 --- !u!1 &350117040
 GameObject:
   m_ObjectHideFlags: 0

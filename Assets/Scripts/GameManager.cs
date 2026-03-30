@@ -34,13 +34,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void Update()
+    /*public void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
             ToggleSimulation();
         }
-    }
+    }*/
 
     public bool IsSimulating()
     {
@@ -56,7 +56,6 @@ public class GameManager : MonoBehaviour
         if (isSimulating)
         {
             OnSimulationStart?.Invoke();
-            Debug.Log(OnSimulationStart?.GetInvocationList().Length ?? 0);
         }
         else
         {
