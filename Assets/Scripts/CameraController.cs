@@ -31,16 +31,16 @@ public class CameraController : MonoBehaviour
 
     void OnEnable()
     {
-        GameManager.OnSimulationStart += SimulationStart;
-        GameManager.OnSimulationStop += SimulationStop;
+        GameManager.OnSimulationStart_Action += SimulationStart;
+        GameManager.OnSimulationStop_Action += SimulationStop;
 
         CinemachineCore.GetInputAxis = GetAxisCustom;
     }
 
     void OnDisable()
     {
-        GameManager.OnSimulationStart -= SimulationStart;
-        GameManager.OnSimulationStop -= SimulationStop;
+        GameManager.OnSimulationStart_Action -= SimulationStart;
+        GameManager.OnSimulationStop_Action -= SimulationStop;
 
         CinemachineCore.GetInputAxis = null;
     }
@@ -94,7 +94,7 @@ public class CameraController : MonoBehaviour
     {
         if (!canMove) return;
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(1))
         {
             Move();
             Look();
