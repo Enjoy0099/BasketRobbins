@@ -145,16 +145,16 @@ namespace RuntimeGizmos
 		{
 			forceUpdatePivotCoroutine = StartCoroutine(ForceUpdatePivotPointAtEndOfFrame());
 
-			GameManager.OnSimulationStart += SimulationStart;
-            GameManager.OnSimulationStop += SimulationStop;
+            GameManager.OnSimulationStart_Action += SimulationStart;
+            GameManager.OnSimulationStop_Action += SimulationStop;
         }
 
-		void OnDisable()
+        void OnDisable()
 		{
-			GameManager.OnSimulationStart -= SimulationStart;
-			GameManager.OnSimulationStop -= SimulationStop;
+            GameManager.OnSimulationStart_Action -= SimulationStart;
+            GameManager.OnSimulationStop_Action -= SimulationStop;
 
-			ClearTargets(); //Just so things gets cleaned up, such as removing any materials we placed on objects.
+            ClearTargets(); //Just so things gets cleaned up, such as removing any materials we placed on objects.
 
 			StopCoroutine(forceUpdatePivotCoroutine);
 		}
@@ -675,7 +675,7 @@ namespace RuntimeGizmos
 				{
 					Transform target = hitInfo.transform;
 
-                    if (!target.CompareTag(NameTag.MoveablePlatform_Tag))
+                    if (!target.CompareTag(GameConstants.MoveablePlatform_Tag))
                         return;
 
                     if (isAdding)
@@ -704,12 +704,13 @@ namespace RuntimeGizmos
                 {
                     Transform target = hitInfo.transform.root;
 
-                    if (!target.CompareTag(NameTag.MoveablePlatform_Tag))
-					{
+                    if (!target.CompareTag(GameConstants.Tag.MoveablePlatform))
+
+                    {
                         ClearTargets();
                         return;
                     }
-                        
+
 
                     if (currentTarget == target)
                     {
