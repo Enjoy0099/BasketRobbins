@@ -134,6 +134,7 @@ namespace RuntimeGizmos
 		private Transform currentTarget = null;
 
         private bool canGizmoShow = true;
+        private CameraController cameraController;
 
         void Awake()
 		{
@@ -158,6 +159,12 @@ namespace RuntimeGizmos
 
 			StopCoroutine(forceUpdatePivotCoroutine);
 		}
+
+        void Start()
+        {
+            // Cache it once
+            cameraController = GetComponent<CameraController>();
+        }
 
         void SimulationStart()
         {
@@ -185,7 +192,9 @@ namespace RuntimeGizmos
 			if(manuallyHandleGizmo)
 			{
 				if(onCheckForSelectedAxis != null) onCheckForSelectedAxis();
-			}else{
+			}
+			else
+			{
 				SetNearAxis();
 			}
 			
@@ -397,7 +406,10 @@ namespace RuntimeGizmos
 		IEnumerator TransformSelected(TransformType transType)
 		{
 			isTransforming = true;
-			totalScaleAmount = 0;
+            cameraController?.SetGizmoDragging(true);
+			Debug.Log("Hello 123 *-*-*-*");
+
+            totalScaleAmount = 0;
 			totalRotationAmount = Quaternion.identity;
 
 			Vector3 originalPivot = pivotPoint;
@@ -609,8 +621,12 @@ namespace RuntimeGizmos
 
 			totalRotationAmount = Quaternion.identity;
 			totalScaleAmount = 0;
+
 			isTransforming = false;
-			SetTranslatingAxis(transformType, Axis.None);
+            cameraController?.SetGizmoDragging(false);
+            Debug.Log("Hello 456 *-*-*-*");
+
+            SetTranslatingAxis(transformType, Axis.None);
 
 			SetPivotPoint();
 		}

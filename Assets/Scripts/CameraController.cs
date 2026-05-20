@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using Cinemachine;
+using RuntimeGizmos;
 
 public class CameraController : MonoBehaviour
 {
@@ -20,6 +22,12 @@ public class CameraController : MonoBehaviour
 
     //--------------------------
 
+    private bool isDraggingUI = false;
+    private bool isDraggingGizmo = false;
+
+    public TransformGizmo gizmoScript;
+
+
     private void Start()
     {
         originalPosition = followCam.transform.position;
@@ -33,7 +41,6 @@ public class CameraController : MonoBehaviour
     {
         GameManager.OnSimulationStart_Action += SimulationStart;
         GameManager.OnSimulationStop_Action += SimulationStop;
-
         CinemachineCore.GetInputAxis = GetAxisCustom;
     }
 
@@ -41,17 +48,14 @@ public class CameraController : MonoBehaviour
     {
         GameManager.OnSimulationStart_Action -= SimulationStart;
         GameManager.OnSimulationStop_Action -= SimulationStop;
-
         CinemachineCore.GetInputAxis = null;
     }
 
     void SimulationStart()
     {
         canMove = false;
-
         followCam.Priority = 20;
         idleCam.Priority = 0;
-
         ResetCamera();
         followCam.enabled = true;
     }
@@ -59,23 +63,58 @@ public class CameraController : MonoBehaviour
     void SimulationStop()
     {
         canMove = true;
-
         followCam.Priority = 0;
         idleCam.Priority = 20;
-
         followCam.enabled = false;
         ResetCamera();
     }
 
-    float GetAxisCustom(string axisName)
+    private bool IsPointerOverUI()
     {
-        if (Input.GetMouseButton(0))
+        if (EventSystem.current == null) return false;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
         {
-            return Input.GetAxis(axisName);
+            position = Input.mousePosition
+        };
+
+        var raycastResults = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, raycastResults);
+
+        /*foreach (var result in raycastResults)
+            Debug.Log($"Hit: {result.gameObject.name} | Layer: {result.gameObject.layer}");*/
+
+        // Only return true if hit is actually UI layer
+        foreach (var result in raycastResults)
+        {
+            if (result.gameObject.layer == LayerMask.NameToLayer("UI"))
+                return true;
         }
 
+        return false;
+    }
+
+    public void SetGizmoDragging(bool dragging)
+    {
+        isDraggingGizmo = dragging;
+    }
+
+    float GetAxisCustom(string axisName)
+    {
+
+        bool overUI = IsPointerOverUI();
+        bool mouseDown = Input.GetMouseButton(0);
+        float axisValue = Input.GetAxis(axisName);
+
+        //Debug.Log($"OverUI:{overUI} | MouseDown:{mouseDown} | Axis:{axisValue}");
+
+        if (isDraggingUI ||  overUI) return 0f;
+        if (mouseDown) return axisValue;
         return 0f;
     }
+
+    
+
 
     void ResetCamera()
     {
@@ -92,9 +131,24 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
+        if (gizmoScript != null)
+            isDraggingGizmo = gizmoScript.isTransforming;
+
+        // When mouse released — clear drag state
+        if (Input.GetMouseButtonUp(0))
+        {
+            isDraggingUI = false;
+            isDraggingGizmo = false;
+        }
+
+        // When mouse pressed — check if started on UI
+        if (Input.GetMouseButtonDown(0))
+            isDraggingUI = IsPointerOverUI();
+
+
         if (!canMove) return;
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(0) && !isDraggingGizmo)
         {
             Move();
             Look();
@@ -111,7 +165,9 @@ public class CameraController : MonoBehaviour
         if (Input.GetKey(KeyCode.E)) up = 1;
         if (Input.GetKey(KeyCode.Q)) up = -1;
 
-        Vector3 dir = idleCam.transform.forward * v + idleCam.transform.right * h + idleCam.transform.up * up;
+        Vector3 dir = idleCam.transform.forward * v 
+                    + idleCam.transform.right * h 
+                    + idleCam.transform.up * up;
         idleCam.transform.position += dir * moveSpeed * Time.deltaTime;
     }
 
@@ -125,6 +181,5 @@ public class CameraController : MonoBehaviour
     }
 
     //------------------------------------------------------------------------------------------------
-
 
 }
