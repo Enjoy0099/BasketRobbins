@@ -754,7 +754,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342416215}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.07720006, y: -0.70288, z: 0.077200085, w: 0.70287985}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7478,6 +7478,7 @@ GameObject:
   - component: {fileID: 1045642050}
   - component: {fileID: 1045642049}
   - component: {fileID: 1045642048}
+  - component: {fileID: 1045642052}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -7498,7 +7499,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
+  m_BlockingObjects: 2
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -7571,6 +7572,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1045642052
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045642047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2017d29023fc4140bcb9fc55e6b98aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clearFocusOnPointerUp: 1
+  clearFocusOnPointerExit: 0
+  useFrameCheck: 0
+  frameInterval: 20
 --- !u!1 &1066638954
 GameObject:
   m_ObjectHideFlags: 0
@@ -7673,7 +7690,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1101907340}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.10268119, y: -0.69961184, z: 0.10268121, w: 0.69961166}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -8192,13 +8209,8 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 1, z: 0}
-  - {x: -5.1591554, y: 1.9905753, z: -0.00000016268004}
-  - {x: -10.115626, y: 2.558379, z: -0.000000318969}
-  - {x: -14.877359, y: 2.7199807, z: -0.0000004691174}
-  - {x: -19.452024, y: 2.4913864, z: -0.00000061336715}
-  - {x: -23.846952, y: 1.887886, z: -0.0000007519493}
-  - {x: -28.069218, y: 0.9242239, z: -0.0000008850871}
-  - {x: -32.125603, y: -0.38544464, z: -0.0000010129942}
+  - {x: -5.2290545, y: 2.1192505, z: -0.0000006878755}
+  - {x: -9.065105, y: 2.6472232, z: -0.0000011909287}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.5
@@ -8228,10 +8240,10 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.003921569, g: 1, b: 0, a: 0}
+      key0: {r: 0.003921569, g: 1, b: 0, a: 1}
       key1: {r: 0.003921569, g: 1, b: 0, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 1}
-      key3: {r: 0, g: 0, b: 0, a: 0.39215687}
+      key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}
@@ -8245,17 +8257,17 @@ LineRenderer:
       ctime6: 0
       ctime7: 0
       atime0: 0
-      atime1: 9830
-      atime2: 32768
-      atime3: 49151
+      atime1: 65535
+      atime2: 38781
+      atime3: 65535
       atime4: 65535
       atime5: 0
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
+      m_ColorSpace: 0
       m_NumColorKeys: 2
-      m_NumAlphaKeys: 5
+      m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
@@ -25028,6 +25040,7 @@ MonoBehaviour:
   idleCam: {fileID: 122016131}
   moveSpeed: 10
   lookSpeed: 2
+  gizmoScript: {fileID: 8374266921969887795}
 --- !u!114 &3901797645963843288
 MonoBehaviour:
   m_ObjectHideFlags: 0

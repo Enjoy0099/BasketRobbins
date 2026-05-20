@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Random = UnityEngine.Random;
+using Unity.VisualScripting;
 
 public class GameManager : MonoBehaviour
 {
@@ -50,13 +51,19 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
-        SimulationToggle();
     }
 
     private void OnEnable()
     {
         //AudioPlay_BGMusic();
+    }
+
+    private void Start()
+    {
+
+        SimulationToggle();
+
+        OnSimulationStop_Action?.Invoke();
     }
 
     public bool IsSimulating()
@@ -106,11 +113,6 @@ public class GameManager : MonoBehaviour
     public void BallShoot()
     {
         OnBallShoot_Action?.Invoke();
-    }
-
-    private void Start()
-    {
-        OnSimulationStop_Action?.Invoke();
     }
 
     public void ScoreManage_AddScore(bool value)

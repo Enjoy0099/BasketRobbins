@@ -110,8 +110,12 @@ public class BasketBallMovement : MonoBehaviour
     /// </summary>
     public void SetPower(float value)
     {
-        power = Mathf.Clamp01(value);
-        trajectoryDirty = true;  // force trajectory redraw on next eligible frame
+        float newPower = Mathf.Clamp01(value);
+        if (!Mathf.Approximately(newPower, power))
+        {
+            power = newPower;
+            trajectoryDirty = true;
+        }
     }
 
     private IEnumerator Shoot()
@@ -138,7 +142,6 @@ public class BasketBallMovement : MonoBehaviour
 
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-
         bool hasInput = horizontal != 0f || vertical != 0f;
 
         if (hasInput)
@@ -158,10 +161,6 @@ public class BasketBallMovement : MonoBehaviour
                 transform.localEulerAngles = rot;
             }
         }
-        else
-        {
-            trajectoryDirty = false;
-        }
     }
 
     public void BallShoot()
@@ -176,8 +175,12 @@ public class BasketBallMovement : MonoBehaviour
     {
         frameCounter++;
 
+        // If nothing changed AND not enough frames passed — skip
+        if (!trajectoryDirty && frameCounter < trajectoryUpdateInterval) return;
+
+        // If enough frames passed without change — also skip
         if (!trajectoryDirty) return;
-        if (frameCounter < trajectoryUpdateInterval) return;
+        trajectoryDirty = false;
 
         frameCounter = 0;
 
