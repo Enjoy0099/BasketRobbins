@@ -1,41 +1,32 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-// Lightweight — only responds to pointer events, zero Update() cost
+// Auto-added by UIFocusFixer — do not add manually
 public class UIElementFocusFixer : MonoBehaviour,
     IPointerUpHandler,
-    IPointerExitHandler,
-    IPointerClickHandler
+    IPointerExitHandler
 {
     [HideInInspector] public bool clearOnPointerUp = true;
     [HideInInspector] public bool clearOnPointerExit = false;
 
-    // Cached — avoid EventSystem.current lookup every call
-    private EventSystem eventSystem;
-
-    void Awake()
-    {
-        eventSystem = EventSystem.current;
-    }
-
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (clearOnPointerUp) ClearFocus();
+        if (!clearOnPointerUp) return;
+        ClearFocus();
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (clearOnPointerExit) ClearFocus();
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
+        if (!clearOnPointerExit) return;
         ClearFocus();
     }
 
     private void ClearFocus()
     {
-        if (eventSystem != null)
-            eventSystem.SetSelectedGameObject(null);
+        if (EventSystem.current != null &&
+            EventSystem.current.currentSelectedGameObject == gameObject)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
     }
 }

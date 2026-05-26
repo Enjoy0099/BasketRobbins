@@ -207,8 +207,12 @@ public class BasketBallMovement : MonoBehaviour
 
             if (Physics.Linecast(previousPosition, currentPosition, out RaycastHit hit))
             {
-                lrPositions.Add(hit.point);
-                break;
+                if (!hit.collider.isTrigger)
+                {
+                    lrPositions.Add(hit.point);
+                    break;
+                }
+                    
             }
 
             if (currentPosition.y <= targetHeight)

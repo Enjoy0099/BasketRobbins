@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using static UnityEngine.GraphicsBuffer;
 
@@ -136,6 +137,14 @@ namespace RuntimeGizmos
         private bool canGizmoShow = true;
         private CameraController cameraController;
 
+        private PointerEventData cachedPointerEventData;
+        private List<RaycastResult> cachedRaycastResults = new List<RaycastResult>();
+
+        private List<Material> sharedMatsBuffer = new List<Material>();
+        private Vector3 lastMousePosition;
+
+        private List<Transform> tempTargetKeys = new List<Transform>();
+
         void Awake()
 		{
 			myCamera = GetComponent<Camera>();
@@ -178,7 +187,7 @@ namespace RuntimeGizmos
 
         void OnDestroy()
 		{
-			ClearAllHighlightedRenderers();
+            ClearAllHighlightedRenderers();
 		}
 
 		void Update()
@@ -407,7 +416,6 @@ namespace RuntimeGizmos
 		{
 			isTransforming = true;
             cameraController?.SetGizmoDragging(true);
-			Debug.Log("Hello 123 *-*-*-*");
 
             totalScaleAmount = 0;
 			totalRotationAmount = Quaternion.identity;
@@ -624,7 +632,6 @@ namespace RuntimeGizmos
 
 			isTransforming = false;
             cameraController?.SetGizmoDragging(false);
-            Debug.Log("Hello 456 *-*-*-*");
 
             SetTranslatingAxis(transformType, Axis.None);
 
@@ -678,8 +685,32 @@ namespace RuntimeGizmos
 
 			return Vector3.zero;
 		}
-	
-		void GetTarget()
+
+        private bool IsHittingUIWithBinding(out ObjectUIBinding binding)
+        {
+            binding = null;
+            if (EventSystem.current == null) return false;
+
+            if (cachedPointerEventData == null)
+                cachedPointerEventData = new PointerEventData(EventSystem.current);
+
+            cachedPointerEventData.position = Input.mousePosition;
+            cachedRaycastResults.Clear();
+            EventSystem.current.RaycastAll(cachedPointerEventData, cachedRaycastResults);
+
+            foreach (RaycastResult result in cachedRaycastResults)
+            {
+                binding = result.gameObject.GetComponent<ObjectUIBinding>();	// Check on the hit object itself
+                if (binding != null) return true;
+                
+                binding = result.gameObject.GetComponentInParent<ObjectUIBinding>();	// Also check on parent (in case you hit a child element like Text/Icon)
+                if (binding != null) return true;
+            }
+
+            return false;
+        }
+
+        void GetTarget()
 		{
 			if(nearAxis == Axis.None && Input.GetMouseButtonDown(0))
 			{
@@ -715,13 +746,32 @@ namespace RuntimeGizmos
 
 
                 RaycastHit hitInfo;
+                bool shouldRaycast = true;
 
-                if (Physics.Raycast(myCamera.ScreenPointToRay(Input.mousePosition), out hitInfo, Mathf.Infinity, selectionMask))
+                if (IsHittingUIWithBinding(out ObjectUIBinding binding))
                 {
-                    Transform target = hitInfo.transform.root;
+                    Debug.Log($"Hit UI with binding → bound to: {binding.boundObject.name}");
+
+                    // Check if bound object is currently selected
+                    if (targetRoots.ContainsKey(binding.boundObject))
+                    {
+                        Debug.Log("UI belongs to selected object — allow interaction!");
+                        shouldRaycast = false;
+                        return; // don't deselect
+                    }
+                    else
+                    {
+                        Debug.Log("UI belongs to a different object");
+                    }
+                }
+
+
+                else if (shouldRaycast && Physics.Raycast(myCamera.ScreenPointToRay(Input.mousePosition), out hitInfo, Mathf.Infinity, selectionMask))
+                {
+                    //Transform target = hitInfo.transform.root;
+                    Transform target = hitInfo.transform;
 
                     if (!target.CompareTag(GameConstants.Tag.MoveablePlatform))
-
                     {
                         ClearTargets();
                         return;
@@ -772,12 +822,13 @@ namespace RuntimeGizmos
 				AddTargetHighlightedRenderers(target);
 
 				SetPivotPoint();
-			}
+            }
 		}
 
 		public void RemoveTarget(Transform target, bool addCommand = true)
 		{
-			if(target != null)
+
+            if (target != null)
 			{
 				if(!targetRoots.ContainsKey(target)) return;
 
@@ -787,12 +838,13 @@ namespace RuntimeGizmos
 				RemoveTargetRoot(target);
 
 				SetPivotPoint();
-			}
+            }
 		}
 
 		public void ClearTargets(bool addCommand = true)
 		{
-			currentTarget = null;
+            
+            currentTarget = null;
 
             if (addCommand) UndoRedoManager.Insert(new ClearTargetsCommand(this, targetRootsOrdered));
 
@@ -814,7 +866,15 @@ namespace RuntimeGizmos
 		{
 			if(target != null)
 			{
-				GetTargetRenderers(target, renderersBuffer);
+
+                SelectableObject selectable = target.GetComponent<SelectableObject>();
+
+                if (selectable != null)
+                {
+                    selectable.Select();
+                }
+
+                GetTargetRenderers(target, renderersBuffer);
 
 				for(int i = 0; i < renderersBuffer.Count; i++)
 				{
@@ -823,13 +883,41 @@ namespace RuntimeGizmos
 					if(!highlightedRenderers.Contains(render))
 					{
 						materialsBuffer.Clear();
-						materialsBuffer.AddRange(render.sharedMaterials);
+                        //materialsBuffer.AddRange(render.sharedMaterials);
+                        render.GetSharedMaterials(sharedMatsBuffer);
+                        materialsBuffer.AddRange(sharedMatsBuffer);
 
-						if(!materialsBuffer.Contains(outlineMaterial))
+                        if (!materialsBuffer.Contains(outlineMaterial))
 						{
-							materialsBuffer.Add(outlineMaterial);
-							render.materials = materialsBuffer.ToArray();
-						}
+                            /*materialsBuffer.Add(outlineMaterial);
+							render.materials = materialsBuffer.ToArray();*/
+
+                            bool hasTransparent = false;
+
+                            for (int j = 0; j < materialsBuffer.Count; j++)
+                            {
+                                Material mat = materialsBuffer[j];
+
+                                if (mat != null && IsTransparent(mat))
+                                {
+                                    hasTransparent = true;
+                                    break;
+                                }
+                            }
+
+                            if (hasTransparent)
+                            {
+                                // Insert outline FIRST
+                                materialsBuffer.Insert(0, outlineMaterial);
+                            }
+                            else
+                            {
+                                // Insert outline LAST
+                                materialsBuffer.Add(outlineMaterial);
+                            }
+
+                            render.materials = materialsBuffer.ToArray();
+                        }
 
 						highlightedRenderers.Add(render);
 					}
@@ -839,7 +927,25 @@ namespace RuntimeGizmos
 			}
 		}
 
-		void GetTargetRenderers(Transform target, List<Renderer> renderers)
+        private bool IsTransparent(Material mat)
+        {
+            // URP / HDRP
+            if (mat.HasProperty("_Surface"))
+            {
+                return mat.GetFloat("_Surface") == 1;
+            }
+
+            // Built-in Standard Shader
+            if (mat.HasProperty("_Mode"))
+            {
+                return mat.GetFloat("_Mode") == 3;
+            }
+
+            // Fallback render queue check
+            return mat.renderQueue >= 3000;
+        }
+
+        void GetTargetRenderers(Transform target, List<Renderer> renderers)
 		{
 			renderers.Clear();
 			if(target != null)
@@ -850,10 +956,10 @@ namespace RuntimeGizmos
 
 		void ClearAllHighlightedRenderers()
 		{
-			foreach(var target in targetRoots)
-			{
-				RemoveTargetHighlightedRenderers(target.Key);
-			}
+            tempTargetKeys.Clear();
+            tempTargetKeys.AddRange(targetRoots.Keys);
+            for (int i = 0; i < tempTargetKeys.Count; i++)
+                RemoveTargetHighlightedRenderers(tempTargetKeys[i]);
 
 			//In case any are still left, such as if they changed parents or what not when they were highlighted.
 			renderersBuffer.Clear();
@@ -863,9 +969,19 @@ namespace RuntimeGizmos
 
 		void RemoveTargetHighlightedRenderers(Transform target)
 		{
-			GetTargetRenderers(target, renderersBuffer);
+			if(target != null)
+			{
+				SelectableObject selectable = target.GetComponent<SelectableObject>();
 
-			RemoveHighlightedRenderers(renderersBuffer);
+				if (selectable != null)
+				{
+					selectable.Deselect();
+				}
+
+				GetTargetRenderers(target, renderersBuffer);
+
+                RemoveHighlightedRenderers(renderersBuffer);
+            }
 		}
 
 		void RemoveHighlightedRenderers(List<Renderer> renderers)
@@ -876,9 +992,11 @@ namespace RuntimeGizmos
 				if(render != null)
 				{
 					materialsBuffer.Clear();
-					materialsBuffer.AddRange(render.sharedMaterials);
+					//materialsBuffer.AddRange(render.sharedMaterials);
+                    render.GetSharedMaterials(sharedMatsBuffer);
+                    materialsBuffer.AddRange(sharedMatsBuffer);
 
-					if(materialsBuffer.Contains(outlineMaterial))
+                    if (materialsBuffer.Contains(outlineMaterial))
 					{
 						materialsBuffer.Remove(outlineMaterial);
 						render.materials = materialsBuffer.ToArray();
@@ -959,7 +1077,9 @@ namespace RuntimeGizmos
 						totalCenterPivotPoint += info.centerPivotPoint;
 					}
 
-					totalCenterPivotPoint /= targetRoots.Count;
+                    targetsEnumerator.Dispose();
+
+                    totalCenterPivotPoint /= targetRoots.Count;
 
 					if(centerType == CenterType.Solo)
 					{
@@ -1038,7 +1158,10 @@ namespace RuntimeGizmos
 		{
 			if(isTransforming) return;
 
-			SetTranslatingAxis(transformType, Axis.None);
+            if (Input.mousePosition == lastMousePosition) return;
+            lastMousePosition = Input.mousePosition;
+
+            SetTranslatingAxis(transformType, Axis.None);
 
 			if(mainTargetRoot == null) return;
 

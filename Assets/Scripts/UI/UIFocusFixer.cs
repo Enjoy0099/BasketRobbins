@@ -1,57 +1,112 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
-// Attach to Canvas — handles ALL UI focus issues
-// Zero per-frame allocation, mobile friendly
+// Place on ONE GameObject only (e.g. EventSystem or GameManager)
+// Never on Canvas
 public class UIFocusFixer : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private bool clearFocusOnPointerUp = true;
     [SerializeField] private bool clearFocusOnPointerExit = false;
 
-    [Header("Performance")]
-    [SerializeField] private bool useFrameCheck = false; // only enable if still having issues
-    [SerializeField] private int frameInterval = 10;   // check every 10 frames if enabled
+    // Singleton — avoids FindObjectOfType calls
+    public static UIFocusFixer Instance { get; private set; }
 
-    private int frameCounter = 0;
+    // Track patched objects to avoid duplicate work
+    private readonly HashSet<int> patchedInstanceIDs = new HashSet<int>();
+
+    // Reusable buffer — zero allocation on repeated calls
+    private static readonly List<Selectable> selectablesBuffer = new List<Selectable>();
+    private static readonly List<Canvas> canvasBuffer = new List<Canvas>();
+
+    void Awake()
+    {
+        // Singleton setup
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     void Start()
     {
-        // Run ONCE at start — no per frame cost
         PatchAll();
     }
 
-    void Update()
+    void OnDestroy()
     {
-        // Disabled by default — only enable if pointer events miss something
-        if (!useFrameCheck) return;
-
-        frameCounter++;
-        if (frameCounter < frameInterval) return;
-        frameCounter = 0;
-
-        // Throttled check — runs every N frames not every frame
-        if (EventSystem.current != null &&
-            EventSystem.current.currentSelectedGameObject != null)
-        {
-            EventSystem.current.SetSelectedGameObject(null);
-        }
+        if (Instance == this) Instance = null;
+        patchedInstanceIDs.Clear();
     }
 
+    // Call this after spawning new UI
     public void PatchAll()
     {
-        Selectable[] selectables = GetComponentsInChildren<Selectable>(true);
-        foreach (Selectable s in selectables)
-            Patch(s.gameObject);
+        // Reuse buffer — no new List allocation
+        canvasBuffer.Clear();
+        selectablesBuffer.Clear();
+
+        // Get all canvases into reused buffer
+        GetAllCanvases(canvasBuffer);
+
+        foreach (Canvas canvas in canvasBuffer)
+        {
+            if (canvas == null) continue;
+
+            // Fill reused buffer
+            canvas.GetComponentsInChildren(true, selectablesBuffer);
+
+            foreach (Selectable s in selectablesBuffer)
+            {
+                if (s == null) continue;
+                PatchSingle(s.gameObject);
+            }
+
+            selectablesBuffer.Clear();
+        }
+
+        canvasBuffer.Clear();
     }
 
-    public void Patch(GameObject target)
+    // Patch one specific object — call after spawning a single UI element
+    public void PatchSingle(GameObject target)
     {
-        if (target.GetComponent<UIElementFocusFixer>() != null) return;
+        if (target == null) return;
 
-        UIElementFocusFixer fixer = target.AddComponent<UIElementFocusFixer>();
+        int id = target.GetInstanceID();
+
+        // Skip if already patched — HashSet lookup is O(1)
+        if (patchedInstanceIDs.Contains(id)) return;
+
+        patchedInstanceIDs.Add(id);
+
+        UIElementFocusFixer fixer = target.GetComponent<UIElementFocusFixer>();
+        if (fixer == null)
+            fixer = target.AddComponent<UIElementFocusFixer>();
+
         fixer.clearOnPointerUp = clearFocusOnPointerUp;
         fixer.clearOnPointerExit = clearFocusOnPointerExit;
+    }
+
+    // Non-allocating canvas fetch using FindObjectsOfTypeNonAlloc (Unity < 2023)
+    // OR FindObjectsByType with no sort (Unity 2023+)
+    private void GetAllCanvases(List<Canvas> buffer)
+    {
+#if UNITY_2023_1_OR_NEWER
+        // FindObjectsByType with None sort is fastest in 2023+
+        Canvas[] found = FindObjectsByType<Canvas>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None
+        );
+        buffer.AddRange(found);
+#else
+        // Legacy path
+        Canvas[] found = FindObjectsOfType<Canvas>(true);
+        buffer.AddRange(found);
+#endif
     }
 }

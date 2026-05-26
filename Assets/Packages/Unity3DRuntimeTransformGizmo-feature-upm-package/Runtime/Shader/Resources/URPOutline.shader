@@ -2,8 +2,8 @@ Shader "Custom/URP/Outline"
 {
     Properties
     {
-        _OutlineColor ("Outline Color", Color) = (1,0.5,0,1)
-        _OutlineWidth ("Outline Width", Range(0,0.1)) = 0.02
+        _OutlineColor ("Outline Color", Color) = (1,1,1,1)
+        _OutlineWidth ("Outline Width", Range(0,0.1)) = 0.04
     }
 
     SubShader

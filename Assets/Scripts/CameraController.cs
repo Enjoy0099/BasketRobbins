@@ -2,6 +2,7 @@
 using UnityEngine.EventSystems;
 using Cinemachine;
 using RuntimeGizmos;
+using UnityEngine.PlayerLoop;
 
 public class CameraController : MonoBehaviour
 {
@@ -33,6 +34,8 @@ public class CameraController : MonoBehaviour
         originalPosition = followCam.transform.position;
         originalRotation = followCam.transform.rotation;
 
+
+        followCam.m_XAxis.Value = 270f;
         originalXAxis = followCam.m_XAxis.Value;
         originalYAxis = followCam.m_YAxis.Value;
     }
@@ -41,14 +44,14 @@ public class CameraController : MonoBehaviour
     {
         GameManager.OnSimulationStart_Action += SimulationStart;
         GameManager.OnSimulationStop_Action += SimulationStop;
-        CinemachineCore.GetInputAxis = GetAxisCustom;
+        CinemachineCore.GetInputAxis += GetAxisCustom;
     }
 
     void OnDisable()
     {
         GameManager.OnSimulationStart_Action -= SimulationStart;
         GameManager.OnSimulationStop_Action -= SimulationStop;
-        CinemachineCore.GetInputAxis = null;
+        CinemachineCore.GetInputAxis -= GetAxisCustom;
     }
 
     void SimulationStart()
@@ -148,7 +151,7 @@ public class CameraController : MonoBehaviour
 
         if (!canMove) return;
 
-        if (Input.GetMouseButton(0) && !isDraggingGizmo)
+        if (Input.GetMouseButton(0) && !isDraggingGizmo && !isDraggingUI)
         {
             Move();
             Look();

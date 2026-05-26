@@ -95,13 +95,17 @@ public class GameManager : MonoBehaviour
         {
             ball_ResetPosition.interactable = true;
             ball_Shoot.interactable = true;
-            ball_ShootPower.interactable = true;
+            //ball_ShootPower.interactable = true;
+
+            ball_ShootPower.gameObject.SetActive(true);
         }
         else
         {
             ball_ResetPosition.interactable = false;
             ball_Shoot.interactable = false;
-            ball_ShootPower.interactable = false;
+            //ball_ShootPower.interactable = false;
+
+            ball_ShootPower.gameObject.SetActive(false);
         }
     }
 
